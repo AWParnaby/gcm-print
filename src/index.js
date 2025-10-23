@@ -57,10 +57,19 @@ async function run(options) {
     }
 
     // Step 4: Generate participant decks with randomization
+    const titleCardCount = options.titleCards !== undefined ? options.titleCards : 10;
     console.log(`Generating ${options.participants} participant decks...`);
-    const decks = randomizer.generateParticipantDecks(responses, options.participants);
-    const totalCards = responses.length * options.participants;
-    console.log(`Creating ${totalCards} total cards (${responses.length} per participant)`);
+    const decks = randomizer.generateParticipantDecks(responses, options.participants, titleCardCount);
+
+    const totalResponseCards = responses.length * options.participants;
+    const totalTitleCards = titleCardCount * options.participants;
+    const totalCards = totalResponseCards + totalTitleCards;
+
+    if (titleCardCount > 0) {
+      console.log(`Creating ${totalCards} total cards (${titleCardCount} title + ${responses.length} response per participant)`);
+    } else {
+      console.log(`Creating ${totalCards} total cards (${responses.length} per participant)`);
+    }
 
     // Step 5: Generate PDF
     console.log('Generating PDF...');
@@ -75,7 +84,8 @@ async function run(options) {
 
     const result = await generator.generatePDF(decks, options.output, {
       progressCallback,
-      logoPath: options.logo
+      logoPath: options.logo,
+      cardsPerPage: options.cardsPerPage || 10
     });
 
     // Step 6: Success message
@@ -83,6 +93,44 @@ async function run(options) {
     console.log(`  Output file: ${result.path}`);
     console.log(`  File size: ${formatBytes(result.size)}`);
     console.log(`  Total cards: ${result.totalCards}`);
+
+    // Display warnings if any
+    if (result.warnings && result.warnings.length > 0) {
+      console.log('\nWarnings:');
+
+      // Group warnings by type
+      const warningsByType = {};
+      result.warnings.forEach(w => {
+        if (!warningsByType[w.warning]) {
+          warningsByType[w.warning] = [];
+        }
+        warningsByType[w.warning].push(w);
+      });
+
+      // Display grouped warnings
+      Object.keys(warningsByType).forEach(warningType => {
+        const cards = warningsByType[warningType];
+        console.log(`  - ${warningType}: ${cards.length} card(s)`);
+
+        // Show first few examples
+        const examples = cards.slice(0, 3);
+        examples.forEach(card => {
+          console.log(`    • ID ${card.id}: "${card.response}"`);
+        });
+
+        if (cards.length > 3) {
+          console.log(`    ... and ${cards.length - 3} more`);
+        }
+      });
+
+      console.log('\nNote: All text has been included, but some responses were scaled down to fit.');
+
+      // Display recommendation if available
+      if (result.recommendedCardsPerPage) {
+        console.log(`\nRecommendation: To keep all text at 13pt, use ${result.recommendedCardsPerPage} cards per page.`);
+        console.log(`  Re-run with: --cards-per-page ${result.recommendedCardsPerPage}`);
+      }
+    }
 
   } catch (error) {
     console.error(`\nUnexpected error: ${error.message}`);

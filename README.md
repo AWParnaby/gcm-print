@@ -9,7 +9,10 @@ gcm-print automates the creation of professionally formatted, printable PDF file
 ## Features
 
 - **CSV to PDF Conversion**: Transform response data into printable card decks
+- **Title Cards**: Configurable title cards for pile labeling during sorting activities (default: 10 per participant)
 - **Cryptographic Randomization**: Each participant receives a uniquely shuffled deck using cryptographically secure random number generation
+- **Dynamic Text Scaling**: Automatically adjusts font size to fit long responses while maintaining readability
+- **Flexible Layout**: Configurable cards per page (2-20) with automatic recommendations for optimal text size
 - **Professional Layout**: Cards optimized for A4 paper with crop marks for easy cutting
 - **Logo Support**: Optional logo integration on each card
 - **Fully Offline**: Zero external network calls - all processing happens locally
@@ -61,12 +64,15 @@ gcm-print -i responses.csv -n 20 -l logo.png -o cards.pdf
 gcm-print [options]
 
 Options:
-  -i, --input <file>           CSV file with responses (required)
-  -n, --participants <number>  Number of participants (required)
-  -o, --output <file>          Output PDF filename (default: "gcm-cards.pdf")
-  -l, --logo <file>            Logo image file (PNG, JPG, SVG)
-  -V, --version                Output version number
-  -h, --help                   Display help information
+  -i, --input <file>              CSV file with responses (required)
+  -n, --participants <number>     Number of participants (required)
+  -o, --output <file>             Output PDF filename (default: "gcm-cards.pdf")
+  -l, --logo <file>               Logo image file (PNG, JPG, SVG)
+  -c, --cards-per-page <number>   Cards per page, 2-20 (default: 10)
+  -t, --title-cards <number>      Title cards per participant, 0-50 (default: 10)
+  --no-title-cards                Skip title card generation
+  -V, --version                   Output version number
+  -h, --help                      Display help information
 ```
 
 ## CSV Format
@@ -94,11 +100,14 @@ id,response
 ## Card Specifications
 
 - **Card Size**: 3.25" × 1.875" (83mm × 48mm)
-- **Cards Per Page**: 10 (2 columns × 5 rows)
+- **Cards Per Page**: 10 by default (configurable 2-20, automatic grid layout)
 - **Page Size**: A4 (210mm × 297mm)
+- **Card Types**:
+  - **Title Cards**: For pile labeling with participant number (P1, P2, etc.), prompt text, and blank space for notes
+  - **Response Cards**: Survey responses with ID numbers and auto-scaling text (13pt preferred, scales down to 7pt minimum if needed)
 - **Typography**:
-  - Response text: 13pt Helvetica
-  - ID number: 11pt Helvetica Bold
+  - Response text: 13pt Helvetica (auto-scales for long text)
+  - ID/Participant number: 11pt Helvetica Bold
   - High contrast black text on white background
 - **Logo**: Maximum 0.5" × 0.5" at 85% opacity (when provided)
 - **Crop Marks**: Dashed lines between cards for cutting guidance
@@ -108,8 +117,9 @@ id,response
 ### Structure
 
 - Cards organized by participant (Participant 1, then Participant 2, etc.)
-- Each participant receives all responses in a unique random order
+- Each participant's deck starts with title cards (default: 10), followed by all responses in a unique random order
 - Footer on each page: "Participant X - Page Y of Z"
+- Automatic warnings if text scaling is required, with recommendations for optimal cards-per-page settings
 
 ### Metadata
 
@@ -134,7 +144,6 @@ This makes gcm-print suitable for sensitive research data, including healthcare 
 The `examples/` directory contains:
 
 - `sample-responses.csv` - Example CSV with 15 responses
-- `sample-logo.png` - Example logo file
 - `test-output.pdf` - Sample generated PDF
 
 ### Try It Out
@@ -147,8 +156,17 @@ cd gcm-print
 # Install dependencies
 npm install
 
-# Run example
-node bin/cli.js -i examples/sample-responses.csv -n 3 -l examples/sample-logo.png -o output.pdf
+# Basic example with default settings (10 title cards per participant)
+node bin/cli.js -i examples/sample-responses.csv -n 3 -o output.pdf
+
+# Custom number of title cards
+node bin/cli.js -i examples/sample-responses.csv -n 3 -t 5 -o output.pdf
+
+# Skip title cards entirely
+node bin/cli.js -i examples/sample-responses.csv -n 3 --no-title-cards -o output.pdf
+
+# Adjust cards per page for better readability with long text
+node bin/cli.js -i examples/sample-responses.csv -n 3 -c 6 -o output.pdf
 ```
 
 ## Troubleshooting

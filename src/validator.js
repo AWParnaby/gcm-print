@@ -123,11 +123,67 @@ function validateLogoFile(filePath) {
 }
 
 /**
+ * Validates cards per page setting
+ * @param {number} cardsPerPage - Number of cards per page
+ * @returns {Object} - {valid: boolean, error: string|null}
+ */
+function validateCardsPerPage(cardsPerPage) {
+  if (cardsPerPage === undefined || cardsPerPage === null) {
+    return { valid: true, error: null }; // Optional, will use default
+  }
+
+  const num = parseInt(cardsPerPage, 10);
+
+  if (isNaN(num)) {
+    return { valid: false, error: 'Cards per page must be a valid number' };
+  }
+
+  if (num < 2) {
+    return { valid: false, error: 'Cards per page must be at least 2' };
+  }
+
+  if (num > 20) {
+    return { valid: false, error: 'Cards per page must not exceed 20' };
+  }
+
+  return { valid: true, error: null };
+}
+
+/**
+ * Validates title card count
+ * @param {number} titleCards - Number of title cards
+ * @returns {Object} - {valid: boolean, error: string|null}
+ */
+function validateTitleCardCount(titleCards) {
+  if (titleCards === undefined || titleCards === null) {
+    return { valid: true, error: null }; // Optional, will use default
+  }
+
+  const num = parseInt(titleCards, 10);
+
+  if (isNaN(num)) {
+    return { valid: false, error: 'Title cards must be a valid number' };
+  }
+
+  if (num < 0) {
+    return { valid: false, error: 'Title cards cannot be negative' };
+  }
+
+  if (num > 50) {
+    return { valid: false, error: 'Title cards must not exceed 50' };
+  }
+
+  return { valid: true, error: null };
+}
+
+/**
  * Validates all inputs
  * @param {Object} options - Input options
  * @param {string} options.input - Path to CSV file
  * @param {number} options.participants - Number of participants
  * @param {string} [options.logo] - Optional path to logo file
+ * @param {number} [options.cardsPerPage] - Optional cards per page setting
+ * @param {number} [options.titleCards] - Optional title card count
  * @returns {Object} - {valid: boolean, errors: Array<string>}
  */
 function validateInputs(options) {
@@ -153,6 +209,22 @@ function validateInputs(options) {
     }
   }
 
+  // Validate cards per page (optional)
+  if (options.cardsPerPage !== undefined) {
+    const cardsValidation = validateCardsPerPage(options.cardsPerPage);
+    if (!cardsValidation.valid) {
+      errors.push(cardsValidation.error);
+    }
+  }
+
+  // Validate title cards (optional)
+  if (options.titleCards !== undefined) {
+    const titleCardsValidation = validateTitleCardCount(options.titleCards);
+    if (!titleCardsValidation.valid) {
+      errors.push(titleCardsValidation.error);
+    }
+  }
+
   return {
     valid: errors.length === 0,
     errors
@@ -164,5 +236,7 @@ module.exports = {
   validateParticipantCount,
   validateCSVStructure,
   validateLogoFile,
+  validateCardsPerPage,
+  validateTitleCardCount,
   validateInputs
 };
