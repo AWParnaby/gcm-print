@@ -1,0 +1,54 @@
+# Claude Code folder
+.claude/
+
+# Specifications (internal documentation)
+gcm-print-specifications.md
+
+# Dependencies
+node_modules/
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+
+# Diagnostic reports
+report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Coverage directory
+coverage/
+*.lcov
+.nyc_output
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# Editor directories and files
+.DS_Store
+.idea
+.vscode/*
+!.vscode/extensions.json
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Test output (keep examples/test-output.pdf for demo purposes)
+test-output.pdf
+**/test-*.pdf
+!examples/test-output.pdf
+
+# OS files
+Thumbs.db

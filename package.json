@@ -1,0 +1,24 @@
+{
+  "name": "gcm-print",
+  "version": "1.0.0",
+  "description": "A Node.js command-line tool",
+  "main": "src/index.js",
+  "bin": {
+    "gcm-print": "./bin/cli.js"
+  },
+  "scripts": {
+    "start": "node bin/cli.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "cli",
+    "command-line"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "commander": "^14.0.1",
+    "csv-parser": "^3.2.0",
+    "pdfkit": "^0.17.2"
+  }
+}
