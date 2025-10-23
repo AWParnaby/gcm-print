@@ -1,7 +1,7 @@
 {
   "name": "gcm-print",
   "version": "1.0.0",
-  "description": "A Node.js command-line tool",
+  "description": "Generate printable PDF cards for Group Concept Mapping (GCM) workshops from CSV data",
   "main": "src/index.js",
   "bin": {
     "gcm-print": "./bin/cli.js"
@@ -11,14 +11,41 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [
+    "gcm",
+    "group-concept-mapping",
+    "pdf",
+    "cards",
+    "workshop",
+    "research",
     "cli",
-    "command-line"
+    "command-line",
+    "csv",
+    "printing",
+    "offline"
   ],
   "author": "",
-  "license": "ISC",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/gcm-print.git"
+  },
+  "bugs": {
+    "url": "https://github.com/yourusername/gcm-print/issues"
+  },
+  "homepage": "https://github.com/yourusername/gcm-print#readme",
   "dependencies": {
     "commander": "^14.0.1",
     "csv-parser": "^3.2.0",
-    "pdfkit": "^0.17.2"
-  }
+    "pdfkit": "^0.17.2",
+    "sharp": "^0.34.4"
+  },
+  "files": [
+    "bin/",
+    "src/",
+    "README.md",
+    "LICENSE"
+  ]
 }

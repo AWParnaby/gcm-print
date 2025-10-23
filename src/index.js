@@ -18,6 +18,7 @@ function formatBytes(bytes) {
  * @param {string} options.input - Path to CSV file
  * @param {number} options.participants - Number of participants
  * @param {string} options.output - Output PDF path
+ * @param {string} [options.logo] - Optional path to logo file
  */
 async function run(options) {
   try {
@@ -51,6 +52,9 @@ async function run(options) {
     }
 
     console.log(`Found ${responses.length} responses`);
+    if (options.logo) {
+      console.log(`Logo: ${options.logo}`);
+    }
 
     // Step 4: Generate participant decks with randomization
     console.log(`Generating ${options.participants} participant decks...`);
@@ -69,7 +73,10 @@ async function run(options) {
       }
     };
 
-    const result = await generator.generatePDF(decks, options.output, progressCallback);
+    const result = await generator.generatePDF(decks, options.output, {
+      progressCallback,
+      logoPath: options.logo
+    });
 
     // Step 6: Success message
     console.log('\nSuccess!');

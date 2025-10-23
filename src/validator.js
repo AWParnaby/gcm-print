@@ -93,10 +93,41 @@ function validateCSVStructure(rows) {
 }
 
 /**
+ * Validates logo file format
+ * @param {string} filePath - Path to the logo file
+ * @returns {Object} - {valid: boolean, error: string|null}
+ */
+function validateLogoFile(filePath) {
+  if (!filePath) {
+    return { valid: true, error: null }; // Logo is optional
+  }
+
+  // Check if file exists and is readable
+  const fileValidation = validateFileExists(filePath, 'Logo file');
+  if (!fileValidation.valid) {
+    return fileValidation;
+  }
+
+  // Check file extension
+  const supportedFormats = ['.png', '.jpg', '.jpeg', '.svg'];
+  const ext = filePath.toLowerCase().substring(filePath.lastIndexOf('.'));
+
+  if (!supportedFormats.includes(ext)) {
+    return {
+      valid: false,
+      error: `Logo file format not supported. Supported formats: ${supportedFormats.join(', ')}`
+    };
+  }
+
+  return { valid: true, error: null };
+}
+
+/**
  * Validates all inputs
  * @param {Object} options - Input options
  * @param {string} options.input - Path to CSV file
  * @param {number} options.participants - Number of participants
+ * @param {string} [options.logo] - Optional path to logo file
  * @returns {Object} - {valid: boolean, errors: Array<string>}
  */
 function validateInputs(options) {
@@ -114,6 +145,14 @@ function validateInputs(options) {
     errors.push(participantValidation.error);
   }
 
+  // Validate logo file (optional)
+  if (options.logo) {
+    const logoValidation = validateLogoFile(options.logo);
+    if (!logoValidation.valid) {
+      errors.push(logoValidation.error);
+    }
+  }
+
   return {
     valid: errors.length === 0,
     errors
@@ -124,5 +163,6 @@ module.exports = {
   validateFileExists,
   validateParticipantCount,
   validateCSVStructure,
+  validateLogoFile,
   validateInputs
 };

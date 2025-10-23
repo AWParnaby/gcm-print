@@ -3,6 +3,7 @@
 
 # Specifications (internal documentation)
 gcm-print-specifications.md
+PUBLISHING.md
 
 # Dependencies
 node_modules/

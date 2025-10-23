@@ -13,6 +13,7 @@ program
   .requiredOption('-i, --input <file>', 'CSV file with responses')
   .requiredOption('-n, --participants <number>', 'Number of participants', parseInt)
   .option('-o, --output <file>', 'Output PDF filename', 'gcm-cards.pdf')
+  .option('-l, --logo <file>', 'Logo image file (PNG, JPG, SVG)')
   .parse(process.argv);
 
 const options = program.opts();

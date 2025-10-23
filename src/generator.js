@@ -2,10 +2,14 @@ const PDFDocument = require('pdfkit');
 const fs = require('fs');
 
 // Constants for card layout (all measurements in points: 1 inch = 72 points)
-const CARD_WIDTH = 3.5 * 72;  // 3.5 inches = 252 points
-const CARD_HEIGHT = 2 * 72;    // 2 inches = 144 points
+const CARD_WIDTH = 3.25 * 72;  // 3.25 inches = 234 points
+const CARD_HEIGHT = 1.875 * 72; // 1.875 inches = 135 points
 const CARD_PADDING = 14;       // Internal padding (approx 0.2 inches)
 const GUTTER = 18;             // Space between cards (0.25 inches)
+
+// Logo constants
+const LOGO_MAX_SIZE = 0.5 * 72; // 0.5 inches = 36 points
+const LOGO_OPACITY = 0.85;       // 85% opacity as per specs
 
 // A4 page dimensions in points
 const PAGE_WIDTH = 595.28;
@@ -13,7 +17,7 @@ const PAGE_HEIGHT = 841.89;
 
 // Grid layout
 const CARDS_PER_ROW = 2;
-const CARDS_PER_COL = 5;
+const CARDS_PER_COL = 5;  // 5 rows with smaller cards to avoid footer overlap
 const CARDS_PER_PAGE = CARDS_PER_ROW * CARDS_PER_COL;
 
 // Calculate page margins to center the card grid
@@ -56,15 +60,55 @@ function drawCropMarks(doc, x, y) {
 }
 
 /**
+ * Draws logo on a card (if provided)
+ * @param {PDFDocument} doc - PDFKit document
+ * @param {string} logoPath - Path to logo file
+ * @param {number} x - Card x position
+ * @param {number} y - Card y position
+ */
+function drawLogo(doc, logoPath, x, y) {
+  if (!logoPath) return;
+
+  try {
+    doc.save();
+
+    // Set opacity
+    doc.opacity(LOGO_OPACITY);
+
+    // Position in top-left corner with padding
+    const logoX = x + CARD_PADDING;
+    const logoY = y + CARD_PADDING;
+
+    // Draw logo with fit option to maintain aspect ratio
+    doc.image(logoPath, logoX, logoY, {
+      fit: [LOGO_MAX_SIZE, LOGO_MAX_SIZE],
+      align: 'left',
+      valign: 'top'
+    });
+
+    doc.restore();
+  } catch (error) {
+    // Silently fail if logo cannot be rendered - don't break PDF generation
+    console.warn(`Warning: Could not render logo: ${error.message}`);
+  }
+}
+
+/**
  * Draws a single card
  * @param {PDFDocument} doc - PDFKit document
  * @param {Object} card - Card data {id, response}
  * @param {number} x - Card x position
  * @param {number} y - Card y position
+ * @param {string} [logoPath] - Optional path to logo file
  */
-function drawCard(doc, card, x, y) {
+function drawCard(doc, card, x, y, logoPath = null) {
   // Draw crop marks
   drawCropMarks(doc, x, y);
+
+  // Draw logo (if provided)
+  if (logoPath) {
+    drawLogo(doc, logoPath, x, y);
+  }
 
   // Draw ID in top-right corner
   doc.font('Helvetica-Bold')
@@ -75,10 +119,11 @@ function drawCard(doc, card, x, y) {
      });
 
   // Draw response text (left-aligned, with wrapping)
+  // Adjust starting position if logo is present
   const textX = x + CARD_PADDING;
-  const textY = y + CARD_PADDING + 20; // Space below ID
+  const textY = logoPath ? y + CARD_PADDING + LOGO_MAX_SIZE + 5 : y + CARD_PADDING + 20;
   const textWidth = CARD_WIDTH - (2 * CARD_PADDING);
-  const textHeight = CARD_HEIGHT - (2 * CARD_PADDING) - 20;
+  const textHeight = CARD_HEIGHT - (textY - y) - CARD_PADDING;
 
   doc.font('Helvetica')
      .fontSize(13)
@@ -117,10 +162,13 @@ function addPageFooter(doc, participantNumber, pageNumber, totalPages) {
  * Generates a PDF with cards for all participants
  * @param {Array} decks - Array of participant decks from randomizer
  * @param {string} outputPath - Path for output PDF file
- * @param {Function} progressCallback - Optional callback for progress updates
+ * @param {Object} options - Generation options
+ * @param {Function} [options.progressCallback] - Optional callback for progress updates
+ * @param {string} [options.logoPath] - Optional path to logo file
  * @returns {Promise} - Resolves when PDF is complete
  */
-function generatePDF(decks, outputPath, progressCallback = null) {
+function generatePDF(decks, outputPath, options = {}) {
+  const { progressCallback = null, logoPath = null } = options;
   return new Promise((resolve, reject) => {
     try {
       // Create PDF document (A4 size)
@@ -160,7 +208,7 @@ function generatePDF(decks, outputPath, progressCallback = null) {
 
           // Draw the card
           const position = getCardPosition(positionOnPage);
-          drawCard(doc, cards[cardIndex], position.x, position.y);
+          drawCard(doc, cards[cardIndex], position.x, position.y, logoPath);
 
           // Add footer at the end of each page
           if (positionOnPage === CARDS_PER_PAGE - 1 || cardIndex === cards.length - 1) {
