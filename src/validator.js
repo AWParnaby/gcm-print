@@ -231,6 +231,178 @@ function validateInputs(options) {
   };
 }
 
+/**
+ * Validates and parses rating criteria list
+ * @param {string} criteriaString - Comma-separated list of criteria
+ * @returns {Object} - {valid: boolean, error: string|null, criteria: Array<string>|null, warning: string|null}
+ */
+function validateCriteria(criteriaString) {
+  if (!criteriaString || criteriaString.trim() === '') {
+    return { valid: false, error: 'Rating criteria cannot be empty', criteria: null, warning: null };
+  }
+
+  // Parse comma-separated list
+  const criteria = criteriaString
+    .split(',')
+    .map(c => c.trim())
+    .filter(c => c.length > 0);
+
+  if (criteria.length === 0) {
+    return { valid: false, error: 'At least one rating criterion is required', criteria: null, warning: null };
+  }
+
+  // Validate each criterion (alphanumeric, spaces, hyphens only)
+  const invalidCriteria = [];
+  const validPattern = /^[a-zA-Z0-9\s\-]+$/;
+
+  for (const criterion of criteria) {
+    if (!validPattern.test(criterion)) {
+      invalidCriteria.push(criterion);
+    }
+  }
+
+  if (invalidCriteria.length > 0) {
+    return {
+      valid: false,
+      error: `Invalid criteria (only letters, numbers, spaces, and hyphens allowed): ${invalidCriteria.join(', ')}`,
+      criteria: null,
+      warning: null
+    };
+  }
+
+  // Check for duplicates
+  const duplicates = criteria.filter((item, index) => criteria.indexOf(item) !== index);
+  if (duplicates.length > 0) {
+    return {
+      valid: false,
+      error: `Duplicate criteria found: ${[...new Set(duplicates)].join(', ')}`,
+      criteria: null,
+      warning: null
+    };
+  }
+
+  // Warn if more than 6 criteria (layout constraints)
+  let warning = null;
+  if (criteria.length > 6) {
+    warning = 'Warning: More than 6 criteria may result in cramped layout. Consider using landscape orientation.';
+  }
+
+  return { valid: true, error: null, criteria, warning };
+}
+
+/**
+ * Validates page size option
+ * @param {string} pageSize - Paper size ('letter' or 'a4')
+ * @returns {Object} - {valid: boolean, error: string|null}
+ */
+function validatePageSize(pageSize) {
+  if (!pageSize) {
+    return { valid: true, error: null }; // Optional, will use default
+  }
+
+  const validSizes = ['letter', 'a4'];
+  if (!validSizes.includes(pageSize.toLowerCase())) {
+    return {
+      valid: false,
+      error: `Invalid page size. Valid options: ${validSizes.join(', ')}`
+    };
+  }
+
+  return { valid: true, error: null };
+}
+
+/**
+ * Validates page orientation option
+ * @param {string} orientation - Page orientation ('portrait' or 'landscape')
+ * @returns {Object} - {valid: boolean, error: string|null}
+ */
+function validateOrientation(orientation) {
+  if (!orientation) {
+    return { valid: true, error: null }; // Optional, will auto-detect
+  }
+
+  const validOrientations = ['portrait', 'landscape'];
+  if (!validOrientations.includes(orientation.toLowerCase())) {
+    return {
+      valid: false,
+      error: `Invalid orientation. Valid options: ${validOrientations.join(', ')}`
+    };
+  }
+
+  return { valid: true, error: null };
+}
+
+/**
+ * Validates all inputs for rating command
+ * @param {Object} options - Input options
+ * @param {string} options.input - Path to CSV file
+ * @param {number} options.participants - Number of participants
+ * @param {string} options.criteria - Comma-separated list of rating criteria
+ * @param {string} [options.logo] - Optional path to logo file
+ * @param {string} [options.pageSize] - Optional page size
+ * @param {string} [options.orientation] - Optional page orientation
+ * @returns {Object} - {valid: boolean, errors: Array<string>, warnings: Array<string>, criteria: Array<string>|null}
+ */
+function validateRatingInputs(options) {
+  const errors = [];
+  const warnings = [];
+  let parsedCriteria = null;
+
+  // Validate input file
+  const fileValidation = validateFileExists(options.input, 'Input CSV file');
+  if (!fileValidation.valid) {
+    errors.push(fileValidation.error);
+  }
+
+  // Validate participant count
+  const participantValidation = validateParticipantCount(options.participants);
+  if (!participantValidation.valid) {
+    errors.push(participantValidation.error);
+  }
+
+  // Validate criteria
+  const criteriaValidation = validateCriteria(options.criteria);
+  if (!criteriaValidation.valid) {
+    errors.push(criteriaValidation.error);
+  } else {
+    parsedCriteria = criteriaValidation.criteria;
+    if (criteriaValidation.warning) {
+      warnings.push(criteriaValidation.warning);
+    }
+  }
+
+  // Validate logo file (optional)
+  if (options.logo) {
+    const logoValidation = validateLogoFile(options.logo);
+    if (!logoValidation.valid) {
+      errors.push(logoValidation.error);
+    }
+  }
+
+  // Validate page size (optional)
+  if (options.pageSize) {
+    const pageSizeValidation = validatePageSize(options.pageSize);
+    if (!pageSizeValidation.valid) {
+      errors.push(pageSizeValidation.error);
+    }
+  }
+
+  // Validate orientation (optional)
+  if (options.orientation) {
+    const orientationValidation = validateOrientation(options.orientation);
+    if (!orientationValidation.valid) {
+      errors.push(orientationValidation.error);
+    }
+  }
+
+  return {
+    valid: errors.length === 0,
+    errors,
+    warnings,
+    criteria: parsedCriteria
+  };
+}
+
 module.exports = {
   validateFileExists,
   validateParticipantCount,
@@ -238,5 +410,9 @@ module.exports = {
   validateLogoFile,
   validateCardsPerPage,
   validateTitleCardCount,
-  validateInputs
+  validateInputs,
+  validateCriteria,
+  validatePageSize,
+  validateOrientation,
+  validateRatingInputs
 };
