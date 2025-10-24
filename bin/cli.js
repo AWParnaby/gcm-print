@@ -40,6 +40,7 @@ program
   .option('-o, --output <file>', 'Output PDF filename', 'gcm-rating-sheets.pdf')
   .option('-c, --criteria <list>', 'Comma-separated list of rating criteria', 'Rating')
   .option('-l, --logo <file>', 'Logo image file (PNG, JPG, SVG)')
+  .option('-s, --scale <number>', 'Likert scale size (3-7 point scale)', (val) => parseInt(val, 10), 4)
   .option('-p, --page-size <size>', 'Paper size: letter or a4', 'a4')
   .option('--orientation <type>', 'Page orientation: portrait or landscape (default: auto)')
   .option('--separator-pages', 'Add separator pages between participants')

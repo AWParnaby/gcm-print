@@ -21,7 +21,7 @@ gcm-print automates the creation of professionally formatted, printable PDF file
   - Crop marks for easy cutting
 - **Rating Sheets**:
   - Table-based layout with ID, Response, and custom rating criteria columns
-  - Likert scales (1-5) for each criterion
+  - Configurable Likert scales (3-7 point, default: 4-point) for each criterion
   - Auto-orientation detection (portrait/landscape) based on number of criteria
   - Multi-page support with repeating headers
 - **Professional Layout**: Optimized for A4 or Letter paper
@@ -122,9 +122,11 @@ Options:
   -o, --output <file>          Output PDF filename (default: "gcm-rating-sheets.pdf")
   -c, --criteria <list>        Comma-separated list of rating criteria (default: "Rating")
   -l, --logo <file>            Logo image file (PNG, JPG, SVG)
+  -s, --scale <number>         Likert scale size, 3-7 point scale (default: 4)
   -p, --page-size <size>       Paper size: letter or a4 (default: "a4")
   --orientation <type>         Page orientation: portrait or landscape (default: auto)
   --separator-pages            Add separator pages between participants
+  --double-sided               Insert blank pages for double-sided printing
   -h, --help                   Display help information
 ```
 
@@ -187,7 +189,7 @@ id,response
 - **Format**: Table-based layout with columns for ID, Response, and rating criteria
 - **Page Size**: A4 or Letter (configurable)
 - **Orientation**: Auto-detected based on number of criteria (portrait for ≤3, landscape for >3), or manually specified
-- **Rating Scale**: 1-5 Likert scale (1__ 2__ 3__ 4__ 5__) for each criterion
+- **Rating Scale**: Configurable Likert scale (3-7 point, default: 4-point scale with 1 2 3 4) for each criterion
 - **Typography**:
   - Response text: 10pt Helvetica
   - Headers: 10pt Helvetica Bold

@@ -89,6 +89,7 @@ async function run(options) {
       progressCallback,
       logoPath: options.logo,
       criteria: validation.criteria,
+      likertScale: options.scale || 4,
       pageSize: options.pageSize || 'a4',
       orientation: options.orientation, // auto if undefined
       separatorPages: options.separatorPages || false,

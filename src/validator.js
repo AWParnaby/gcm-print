@@ -333,11 +333,39 @@ function validateOrientation(orientation) {
 }
 
 /**
+ * Validates Likert scale size
+ * @param {number} scale - Likert scale size (3-7)
+ * @returns {Object} - {valid: boolean, error: string|null}
+ */
+function validateLikertScale(scale) {
+  if (scale === undefined || scale === null) {
+    return { valid: true, error: null }; // Optional, will use default
+  }
+
+  const num = parseInt(scale, 10);
+
+  if (isNaN(num)) {
+    return { valid: false, error: 'Likert scale must be a valid number' };
+  }
+
+  if (num < 3) {
+    return { valid: false, error: 'Likert scale must be at least 3' };
+  }
+
+  if (num > 7) {
+    return { valid: false, error: 'Likert scale must not exceed 7' };
+  }
+
+  return { valid: true, error: null };
+}
+
+/**
  * Validates all inputs for rating command
  * @param {Object} options - Input options
  * @param {string} options.input - Path to CSV file
  * @param {number} options.participants - Number of participants
  * @param {string} options.criteria - Comma-separated list of rating criteria
+ * @param {number} [options.scale] - Optional Likert scale size
  * @param {string} [options.logo] - Optional path to logo file
  * @param {string} [options.pageSize] - Optional page size
  * @param {string} [options.orientation] - Optional page orientation
@@ -368,6 +396,14 @@ function validateRatingInputs(options) {
     parsedCriteria = criteriaValidation.criteria;
     if (criteriaValidation.warning) {
       warnings.push(criteriaValidation.warning);
+    }
+  }
+
+  // Validate Likert scale (optional)
+  if (options.scale !== undefined && options.scale !== null) {
+    const scaleValidation = validateLikertScale(options.scale);
+    if (!scaleValidation.valid) {
+      errors.push(scaleValidation.error);
     }
   }
 
@@ -414,5 +450,6 @@ module.exports = {
   validateCriteria,
   validatePageSize,
   validateOrientation,
+  validateLikertScale,
   validateRatingInputs
 };

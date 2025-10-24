@@ -202,14 +202,17 @@ function drawTableHeaders(doc, criteria, layout, y) {
 }
 
 /**
- * Draws a Likert scale (1  2  3  4  5) - participants circle their choice
+ * Draws a Likert scale (e.g., 1  2  3  4) - participants circle their choice
  * @param {PDFDocument} doc - PDFKit document
  * @param {number} x - X position
  * @param {number} y - Y position
  * @param {number} width - Available width
+ * @param {number} scaleSize - Number of points in the scale (3-7)
  */
-function drawLikertScale(doc, x, y, width) {
-  const scale = ['1', '2', '3', '4', '5'];
+function drawLikertScale(doc, x, y, width, scaleSize = 4) {
+  // Generate scale array dynamically based on size
+  const scale = Array.from({ length: scaleSize }, (_, i) => String(i + 1));
+
   const horizontalPadding = 6; // Padding on left and right sides
   const usableWidth = width - (2 * horizontalPadding);
   const spacing = usableWidth / scale.length;
@@ -222,7 +225,9 @@ function drawLikertScale(doc, x, y, width) {
   doc.font('Helvetica').fontSize(fontSize);
 
   // Calculate minimum width needed per number with spacing
-  const maxNumberWidth = doc.widthOfString('5'); // Widest digit
+  // Use the widest digit in the scale (could be '1' or '7')
+  const maxDigit = scale[scale.length - 1];
+  const maxNumberWidth = doc.widthOfString(maxDigit);
   const minSpaceNeeded = maxNumberWidth + 4; // 4pt minimum spacing around number
 
   // If spacing is too tight, scale down font
@@ -255,9 +260,10 @@ function drawLikertScale(doc, x, y, width) {
  * @param {Array} criteria - Array of criteria names
  * @param {Object} layout - Layout configuration
  * @param {number} y - Y position to draw row
+ * @param {number} likertScale - Likert scale size
  * @returns {number} - Height of the drawn row
  */
-function drawTableRow(doc, response, criteria, layout, y) {
+function drawTableRow(doc, response, criteria, layout, y, likertScale = 4) {
   const borderColor = '#CCCCCC';
   const textColor = '#000000';
   const cellPadding = 4;
@@ -324,7 +330,7 @@ function drawTableRow(doc, response, criteria, layout, y) {
   // Criteria cells (Likert scales)
   const likertY = y + (rowHeight / 2) - 5; // Center vertically
   for (let i = 0; i < criteria.length; i++) {
-    drawLikertScale(doc, currentX, likertY, layout.criteriaColumnWidth);
+    drawLikertScale(doc, currentX, likertY, layout.criteriaColumnWidth, likertScale);
     currentX += layout.criteriaColumnWidth;
   }
 
@@ -393,6 +399,7 @@ function calculatePagesForParticipant(responses, layout, doc) {
  * @param {Function} options.progressCallback - Progress callback function
  * @param {string} options.logoPath - Optional path to logo file
  * @param {Array} options.criteria - Array of rating criteria
+ * @param {number} options.likertScale - Likert scale size (3-7)
  * @param {string} options.pageSize - Page size ('a4' or 'letter')
  * @param {string} options.orientation - Page orientation ('portrait', 'landscape', or undefined for auto)
  * @param {boolean} options.separatorPages - Add separator pages between participants
@@ -406,6 +413,7 @@ async function generateRatingPDF(decks, outputPath, options = {}) {
         progressCallback = () => {},
         logoPath = null,
         criteria = ['Rating'],
+        likertScale = 4,
         pageSize = 'a4',
         orientation: userOrientation,
         separatorPages = false,
@@ -504,7 +512,7 @@ async function generateRatingPDF(decks, outputPath, options = {}) {
           }
 
           // Draw the row
-          const actualRowHeight = drawTableRow(doc, response, criteria, layout, currentY);
+          const actualRowHeight = drawTableRow(doc, response, criteria, layout, currentY, likertScale);
           currentY += actualRowHeight;
         }
 
